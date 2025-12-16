@@ -2,10 +2,6 @@ using System.Diagnostics;
 
 namespace CornwallRoom;
 
-/// <summary>
-/// Главная форма приложения - визуальный интерфейс для рендеринга Корнуэльской комнаты.
-/// Реализует панель управления с настройками материалов, освещения и параметров рендеринга.
-/// </summary>
 public sealed class MainForm : Form
 {
     private readonly PictureBox _picture = new() { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.Zoom, BackColor = Color.Black };
@@ -26,10 +22,6 @@ public sealed class MainForm : Form
     private readonly CancellationTokenSource _cts = new();
     private Bitmap? _last;
 
-    /// <summary>
-    /// Конструктор главной формы. Инициализирует все элементы управления,
-    /// настраивает компоновку и обработчики событий.
-    /// </summary>
     public MainForm()
     {
         Text = "Корнуэльская комната";
@@ -80,7 +72,7 @@ public sealed class MainForm : Form
 
         // Обработчики событий
         _btnRender.Click += async (_, _) => await RenderAsync();
-        FormClosing += (_, _) => _cts.Cancel(); // Отмена рендеринга при закрытии формы
+        FormClosing += (_, _) => _cts.Cancel();
 
         SetFormSize();
         Shown += async (_, _) => await RenderAsync(); // Автоматический рендеринг при запуске
@@ -88,7 +80,6 @@ public sealed class MainForm : Form
 
     /// <summary>
     /// Устанавливает размер формы в соответствии с размером изображения и панели управления.
-    /// Фиксированный размер для сохранения компоновки интерфейса.
     /// </summary>
     private void SetFormSize()
     {
@@ -106,14 +97,10 @@ public sealed class MainForm : Form
         MaximizeBox = false;
     }
 
-    /// <summary>
-    /// Создает невидимый разделитель для улучшения компоновки интерфейса.
-    /// </summary>
     private static Control Spacer() => new Panel { Dock = DockStyle.Top, Height = 10 };
 
     /// <summary>
-    /// Основной метод рендеринга. Выполняется асинхронно, чтобы не блокировать интерфейс.
-    /// Собирает параметры из элементов управления, запускает трассировку лучей и отображает результат.
+    /// Основной метод асинхронного рендеринга
     /// </summary>
     private async Task RenderAsync()
     {

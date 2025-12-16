@@ -4,24 +4,18 @@ using System.Runtime.InteropServices;
 namespace CornwallRoom;
 
 /// <summary>
-/// Фабрика сцены для Корнуэльской комнаты.
-/// Создает геометрию комнаты, объекты, материалы и освещение в соответствии с параметрами рендеринга.
-/// Размеры комнаты: x [-1,1], y [0,2], z [-1,1]
+/// Создает геометрию комнаты, объекты, материалы и освещение в соответствии с параметрами рендеринга
 /// </summary>
 public static class SceneFactory
 {
-    // Границы комнаты для построения стен
+    // Размеры комнаты
     private const double X0 = -1, X1 = 1;
     private const double Y0 = 0, Y1 = 2;
     private const double Z0 = -1, Z1 = 1;
 
     /// <summary>
-    /// Создает сцену Корнуэльской комнаты с заданными параметрами.
+    /// Создает сцену с заданными параметрами
     /// </summary>
-    /// <param name="opts">Параметры рендеринга</param>
-    /// <param name="camera">Выходной параметр - настроенная камера</param>
-    /// <param name="lights">Выходной параметр - массив источников света</param>
-    /// <returns>Мировую сцену в виде иерархии объектов</returns>
     public static IHittable BuildCornwallRoom(RenderOptions opts, out Camera camera, out PointLight[] lights)
     {
         var world = new HittableList();
@@ -29,41 +23,41 @@ public static class SceneFactory
         // Базовые материалы для стен комнаты
         var whiteWall = new Material
         {
-            Albedo = new ColorRGB(0.8, 0.8, 0.8),  // Светло-серый цвет
-            PhongSpecular = 0.08,  // Небольшой блик для реалистичности
+            Albedo = new ColorRGB(0.8, 0.8, 0.8), 
+            PhongSpecular = 0.08,  // Матовая поверхность
             PhongPower = 40
         };
 
         var redWall = new Material
         {
-            Albedo = new ColorRGB(0.85, 0.2, 0.2),  // Красная стена
+            Albedo = new ColorRGB(0.85, 0.2, 0.2),  
             PhongSpecular = 0.05,
             PhongPower = 40
         };
 
         var greenWall = new Material
         {
-            Albedo = new ColorRGB(0.2, 0.85, 0.2),  // Зеленая стена
+            Albedo = new ColorRGB(0.2, 0.85, 0.2), 
             PhongSpecular = 0.05,
             PhongPower = 40
         };
 
         var blueWall = new Material
         {
-            Albedo = new ColorRGB(0.2, 0.2, 0.85),  // Синяя стена
+            Albedo = new ColorRGB(0.2, 0.2, 0.85), 
             PhongSpecular = 0.05,
             PhongPower = 40
         };
 
-        // Базовый материал для сфер (диффузный серый)
+        // Базовый материал для сфер
         var sphereBase = new Material
         {
             Albedo = new ColorRGB(0.75, 0.75, 0.75),
-            PhongSpecular = 0.12,  // Более выраженный блик у сфер
+            PhongSpecular = 0.12, 
             PhongPower = 80
         };
 
-        // Базовый материал для кубов (желтоватый оттенок)
+        // Базовый материал для кубов
         var cubeBase = new Material
         {
             Albedo = new ColorRGB(0.75, 0.75, 0.2),
@@ -72,7 +66,7 @@ public static class SceneFactory
         };
 
         /// <summary>
-        /// Локальная функция для создания зеркальной стены (если выбрана в опциях)
+        /// Локальная функция для создания зеркальной стены
         /// </summary>
         Material Wall(Material baseMat, MirrorWall which)
         {
@@ -81,29 +75,23 @@ public static class SceneFactory
             // Клонируем материал и делаем его зеркальным
             var mirrorWall = baseMat.Clone();
             mirrorWall.IsMirror = true;
-            mirrorWall.MirrorStrength = 0.92;  // 92% отражения
-            mirrorWall.PhongSpecular = 0.0;    // Отключаем фоновое бликование
+            mirrorWall.MirrorStrength = 0.92; 
+            mirrorWall.PhongSpecular = 0.0;   
             mirrorWall.PhongPower = 1;
             return mirrorWall;
         }
 
-        // Построение 6 стен комнаты (все стены присутствуют для корректного отражения/преломления)
-        // Левая стена (x = -1), красная
+        // Построение стен комнаты
         world.Add(new YZRect(Y0, Y1, Z0, Z1, X0, flipNormal: false, material: Wall(redWall, MirrorWall.Left)));
-        // Правая стена (x = +1), зеленая
         world.Add(new YZRect(Y0, Y1, Z0, Z1, X1, flipNormal: true, material: Wall(greenWall, MirrorWall.Right)));
-        // Пол (y=0), белый
         world.Add(new XZRect(X0, X1, Z0, Z1, Y0, flipNormal: false, material: Wall(whiteWall, MirrorWall.Floor)));
-        // Потолок (y=2), белый
         world.Add(new XZRect(X0, X1, Z0, Z1, Y1, flipNormal: true, material: Wall(whiteWall, MirrorWall.Ceiling)));
-        // Задняя стена (z=-1), синяя
         world.Add(new XYRect(X0, X1, Y0, Y1, Z0, flipNormal: false, material: Wall(blueWall, MirrorWall.Back)));
-        // Передняя стена (z=+1), белая (камера смотрит через нее)
         world.Add(new XYRect(X0, X1, Y0, Y1, Z1, flipNormal: true, material: Wall(whiteWall, MirrorWall.Front)));
 
         // Создание материалов для сфер с применением настроек пользователя
-        var sphere1Mat = sphereBase.Clone();  // Левая сфера (потенциально зеркальная)
-        var sphere2Mat = sphereBase.Clone();  // Правая сфера (потенциально прозрачная)
+        var sphere1Mat = sphereBase.Clone();  // Левая сфера 
+        var sphere2Mat = sphereBase.Clone();  // Правая сфера
 
         if (opts.MirrorSpheres)
         {
@@ -116,18 +104,18 @@ public static class SceneFactory
         {
             sphere2Mat.IsTransparent = true;
             sphere2Mat.Ior = 1.1;  // Коэффициент преломления чуть выше воздуха
-            sphere2Mat.Transparency = 0.95;  // 95% прозрачности
+            sphere2Mat.Transparency = 0.95;  
             sphere2Mat.ReflectionFactor = 0.1;  // 10% отражения по Френелю
-            sphere2Mat.Albedo = new ColorRGB(0.9, 0.9, 0.9);  // Слегка белесый цвет стекла
+            sphere2Mat.Albedo = new ColorRGB(0.9, 0.9, 0.9);  
         }
 
         // Размещение сфер в комнате
-        world.Add(new Sphere(new Vec3(-0.45, 0.35, -0.15), 0.35, sphere1Mat));  // Левая сфера
-        world.Add(new Sphere(new Vec3(0.45, 0.30, 0.25), 0.30, sphere2Mat));    // Правая сфера
+        world.Add(new Sphere(new Vec3(-0.45, 0.35, -0.15), 0.35, sphere1Mat)); 
+        world.Add(new Sphere(new Vec3(0.45, 0.30, 0.25), 0.30, sphere2Mat)); 
 
         // Создание материалов для кубов
-        var cube1Mat = cubeBase.Clone();  // Левый куб (потенциально зеркальный)
-        var cube2Mat = cubeBase.Clone();  // Правый куб (потенциально прозрачный)
+        var cube1Mat = cubeBase.Clone();  // Левый куб 
+        var cube2Mat = cubeBase.Clone();  // Правый куб
 
         if (opts.MirrorCubes)
         {
@@ -145,18 +133,15 @@ public static class SceneFactory
             cube2Mat.Albedo = new ColorRGB(0.9, 0.9, 0.9);
         }
 
-        // Размещение кубов в комнате (полые параллелепипеды)
-        AddHollowBox(world, new Vec3(-0.85, 0.0, -0.85), new Vec3(-0.35, 0.90, -0.35), cube1Mat);  // Левый куб
-        AddHollowBox(world, new Vec3(0.10, 0.0, -0.75), new Vec3(0.65, 0.60, -0.20), cube2Mat);    // Правый куб
+        // Размещение кубов в комнате
+        AddCube(world, new Vec3(-0.85, 0.0, -0.85), new Vec3(-0.35, 0.90, -0.35), cube1Mat);  
+        AddCube(world, new Vec3(0.10, 0.0, -0.75), new Vec3(0.65, 0.60, -0.20), cube2Mat);   
 
-        // Основной источник света в центре потолка
+        // Основной источник света
         var light1 = new PointLight(new Vec3(0.0, 1.85, 0.0), new ColorRGB(1, 1, 1), intensity: 20.0);
 
         // Добавление второго источника света если выбран
-        if (opts.SecondLightPlacement == SecondLightPlacement.None)
-        {
-            lights = new[] { light1 };
-        }
+        if (opts.SecondLightPlacement == SecondLightPlacement.None) { lights = new[] { light1 }; }
         else
         {
             Vec3 pos2;
@@ -170,18 +155,17 @@ public static class SceneFactory
                 default: pos2 = new Vec3(0.0, (Y0 + Y1) * 0.5, Z0 + 0.05); break;
             }
 
-            var light2 = new PointLight(pos2, new ColorRGB(1, 0.98, 0.95), intensity: 10.0);  // Теплый белый свет
+            var light2 = new PointLight(pos2, new ColorRGB(1, 0.98, 0.95), intensity: 10.0);
             lights = new[] { light1, light2 };
         }
 
-        // Настройка камеры для обзора всей комнаты
-        // Камера расположена близко к передней стене, смотрит в центр комнаты
+        // Настройка камеры
         double aspect = (double)opts.Width / opts.Height;
         camera = new Camera(
-            lookFrom: new Vec3(0.0, 0.8, 0.95),     // Позиция: центр по X, немного ниже середины, близко к передней стене
-            lookAt: new Vec3(0.0, 1.0, -0.7),       // Направление: в центр комнаты, чуть вглубь
-            vUp: new Vec3(0, 1, 0),                 // Вектор "вверх" - ось Y
-            vfovDeg: 70,                            // Широкий угол обзора для захвата пола и потолка
+            lookFrom: new Vec3(0.0, 0.8, 0.95),    
+            lookAt: new Vec3(0.0, 1.0, -0.7),     
+            vUp: new Vec3(0, 1, 0),                
+            vfovDeg: 70,                        
             aspect: aspect
         );
 
@@ -189,20 +173,14 @@ public static class SceneFactory
     }
 
     /// <summary>
-    /// Создает полый параллелепипед (куб) из 6 прямоугольных граней.
-    /// Используется для создания кубических объектов в сцене.
+    /// Создает полый куб из 6 прямоугольных граней
     /// </summary>
-    /// <param name="world">Список объектов для добавления граней</param>
-    /// <param name="min">Минимальная координата куба</param>
-    /// <param name="max">Максимальная координата куба</param>
-    /// <param name="material">Материал для всех граней куба</param>
-    private static void AddHollowBox(HittableList world, Vec3 min, Vec3 max, Material material)
+    private static void AddCube(HittableList world, Vec3 min, Vec3 max, Material material)
     {
         double x0 = min.X, x1 = max.X;
         double y0 = min.Y, y1 = max.Y;
         double z0 = min.Z, z1 = max.Z;
 
-        // Создание 6 граней параллелепипеда:
         world.Add(new YZRect(y0, y1, z0, z1, x0, flipNormal: true, material: material));    // Левая грань
         world.Add(new YZRect(y0, y1, z0, z1, x1, flipNormal: false, material: material));   // Правая грань
         world.Add(new XZRect(x0, x1, z0, z1, y0, flipNormal: true, material: material));    // Нижняя грань
@@ -214,17 +192,13 @@ public static class SceneFactory
 
 /// <summary>
 /// Основной класс трассировщика лучей.
-/// Выполняет рендеринг сцены в растровое изображение с использованием многопоточности.
+/// Выполняет рендеринг сцены в растровое изображение с использованием многопоточности
 /// </summary>
 public static class RayTracer
 {
     /// <summary>
-    /// Рендерит сцену Корнуэльской комнаты в растровое изображение.
-    /// Использует параллельные вычисления для ускорения рендеринга.
+    /// Рендер сцены
     /// </summary>
-    /// <param name="opts">Параметры рендеринга</param>
-    /// <param name="ct">Токен отмены для прерывания рендеринга</param>
-    /// <returns>Растровое изображение с результатом рендеринга</returns>
     public static Bitmap RenderCornwall(RenderOptions opts, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -269,9 +243,9 @@ public static class RayTracer
 
                 // Усреднение цвета по количеству сэмплов
                 col = col * (1.0 / spp);
-                var c = col.ToColorSRGB();  // Конвертация в sRGB с гамма-коррекцией
+                var c = col.ToColorSRGB(); 
 
-                // Запись пикселя в буфер (формат BGR)
+                // Запись пикселя в буфер
                 int i = rowIndex + x * 3;
                 buffer[i + 0] = c.B;
                 buffer[i + 1] = c.G;
@@ -289,15 +263,8 @@ public static class RayTracer
     /// Трассирует луч через сцену с рекурсивным учетом отражений и преломлений.
     /// Вычисляет цвет пикселя на основе пересечений с объектами и освещения.
     /// </summary>
-    /// <param name="ray">Луч для трассировки</param>
-    /// <param name="world">Сцена для пересечения</param>
-    /// <param name="lights">Источники света</param>
-    /// <param name="depth">Оставшаяся глубина рекурсии</param>
-    /// <param name="environmentIor">Коэффициент преломления текущей среды</param>
-    /// <returns>Вычисленный цвет для данного луча</returns>
     private static ColorRGB TraceRay(in Ray ray, IHittable world, PointLight[] lights, int depth, double environmentIor)
     {
-        // Прерывание рекурсии при достижении максимальной глубины
         if (depth <= 0) return ColorRGB.Black;
 
         // Поиск ближайшего пересечения луча со сценой
@@ -307,7 +274,7 @@ public static class RayTracer
         var p = hit.P;
         var n = hit.Normal;
 
-        // Обработка зеркальных материалов (идеальное отражение)
+        // Обработка зеркальных материалов
         if (mat.IsMirror)
         {
             Vec3 reflDir = Vec3.Reflect(ray.Direction, n).Normalized();

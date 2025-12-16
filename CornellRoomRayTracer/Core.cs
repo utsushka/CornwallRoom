@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Список объектов сцены для коллективного поиска пересечений.
-/// Реализует интерфейс IHittable для единообразной обработки сложных сцен.
+/// Реализует интерфейс IHittable для единообразной обработки сложных сцен
 /// </summary>
 public sealed class HittableList : IHittable
 {
@@ -34,8 +34,7 @@ public sealed class HittableList : IHittable
 }
 
 /// <summary>
-/// Виртуальная камера для генерации лучей через воображаемую плоскость изображения.
-/// Реализует простую модель камеры с перспективной проекцией.
+/// Камера с перспективной проекцией
 /// </summary>
 public sealed class Camera
 {
@@ -74,8 +73,8 @@ public sealed class Camera
     /// <summary>
     /// Генерирует луч через заданную точку на плоскости изображения.
     /// </summary>
-    /// <param name="s">Горизонтальная координата (0..1)</param>
-    /// <param name="t">Вертикальная координата (0..1)</param>
+    /// <param name="s">Горизонтальная координата ∈ (0..1)</param>
+    /// <param name="t">Вертикальная координата ∈ (0..1)</param>
     /// <returns>Луч из камеры через точку на плоскости изображения</returns>
     public Ray GetRay(double s, double t)
     {
@@ -84,11 +83,6 @@ public sealed class Camera
     }
 }
 
-/// <summary>
-/// Цвет в линейном RGB пространстве.
-/// Хранит компоненты как числа с плавающей точкой для точных вычислений.
-/// Конвертируется в sRGB с гамма-коррекцией для отображения.
-/// </summary>
 public readonly struct ColorRGB
 {
     public readonly double R;
@@ -135,21 +129,16 @@ public readonly struct ColorRGB
 }
 
 /// <summary>
-/// Запись о пересечении луча с объектом.
-/// Содержит всю необходимую информацию для расчета освещения в точке пересечения.
+/// Запись о пересечении луча с объектом
 /// </summary>
 public readonly struct HitRecord
 {
-    public readonly double T;           // Параметр луча в точке пересечения
+    public readonly double T;          // Параметр луча в точке пересечения
     public readonly Vec3 P;            // Точка пересечения в мировых координатах
     public readonly Vec3 Normal;       // Нормаль в точке пересечения (всегда направлена против луча)
     public readonly bool FrontFace;    // Указывает, пересек ли луч объект с внешней стороны
     public readonly Material Material; // Материал объекта в точке пересечения
 
-    /// <summary>
-    /// Создает запись о пересечении, автоматически определяя ориентацию нормали.
-    /// Нормаль всегда направлена против луча для корректного расчета освещения.
-    /// </summary>
     public HitRecord(double t, Vec3 p, Vec3 outwardNormal, Ray ray, Material material)
     {
         T = t;
@@ -161,28 +150,20 @@ public readonly struct HitRecord
 }
 
 /// <summary>
-/// Интерфейс для всех объектов, которые могут пересекаться с лучом.
-/// Является основой для иерархии геометрических объектов сцены.
+/// Интерфейс для всех объектов, которые могут пересекаться с лучом
 /// </summary>
-public interface IHittable
-{
-    bool Hit(in Ray ray, double tMin, double tMax, out HitRecord hit);
-}
+public interface IHittable { bool Hit(in Ray ray, double tMin, double tMax, out HitRecord hit); }
 
-/// <summary>
-/// Материал объекта, определяющий его оптические свойства.
-/// Поддерживает диффузные, зеркальные и прозрачные материалы с различными параметрами.
-/// </summary>
 public sealed class Material
 {
     public ColorRGB Albedo { get; set; } = new(1, 1, 1);  // Базовый цвет (диффузная компонента)
 
     // Зеркальные свойства
-    public bool IsMirror { get; set; }                    // Флаг зеркального материала
-    public double MirrorStrength { get; set; } = 0.85;    // Интенсивность зеркального отражения (0..1)
+    public bool IsMirror { get; set; }                    
+    public double MirrorStrength { get; set; } = 0.85;    // Зеркальность (0..1)
 
     // Свойства прозрачности/преломления
-    public bool IsTransparent { get; set; }               // Флаг прозрачного материала
+    public bool IsTransparent { get; set; }               
     public double Ior { get; set; } = 1.5;                // Коэффициент преломления (index of refraction)
     public double Transparency { get; set; } = 0.98;      // Прозрачность (0..1)
     public double ReflectionFactor { get; set; } = 0.1;   // Коэффициент отражения по Френелю
@@ -191,10 +172,6 @@ public sealed class Material
     public double PhongSpecular { get; set; } = 0.1;      // Интенсивность бликов
     public double PhongPower { get; set; } = 50.0;        // Жесткость бликов (экспонента)
 
-    /// <summary>
-    /// Создает глубокую копию материала.
-    /// Используется для модификации базовых материалов без изменения оригинала.
-    /// </summary>
     public Material Clone()
     {
         return new Material
@@ -212,14 +189,11 @@ public sealed class Material
     }
 }
 
-/// <summary>
-/// Точечный источник света с затуханием по закону обратных квадратов.
-/// </summary>
 public readonly struct PointLight
 {
-    public readonly Vec3 Position;     // Позиция источника в мировых координатах
-    public readonly ColorRGB Color;    // Цвет излучения (белый или цветной)
-    public readonly double Intensity;  // Интенсивность в условных единицах (ваттах)
+    public readonly Vec3 Position;     
+    public readonly ColorRGB Color;   
+    public readonly double Intensity;  // Интенсивность в ваттах
 
     public PointLight(Vec3 position, ColorRGB color, double intensity)
     {
@@ -229,14 +203,10 @@ public readonly struct PointLight
     }
 }
 
-/// <summary>
-/// Луч в трехмерном пространстве.
-/// Определяется начальной точкой и направлением (не обязательно нормализованным).
-/// </summary>
 public readonly struct Ray
 {
-    public readonly Vec3 Origin;    // Начальная точка луча
-    public readonly Vec3 Direction; // Направление луча
+    public readonly Vec3 Origin;    
+    public readonly Vec3 Direction; 
 
     public Ray(Vec3 origin, Vec3 direction)
     {
@@ -244,16 +214,9 @@ public readonly struct Ray
         Direction = direction;
     }
 
-    /// <summary>
-    /// Вычисляет точку на луче на расстоянии t от начала.
-    /// </summary>
     public Vec3 At(double t) => Origin + t * Direction;
 }
 
-/// <summary>
-/// Перечисление для выбора зеркальной стены в Корнуэльской комнате.
-/// Соответствует индексам в ComboBox интерфейса.
-/// </summary>
 public enum MirrorWall
 {
     None = 0,
@@ -265,10 +228,6 @@ public enum MirrorWall
     Front = 6
 }
 
-/// <summary>
-/// Перечисление для размещения второго источника света.
-/// Определяет, на какой поверхности комнаты будет размещен дополнительный свет.
-/// </summary>
 public enum SecondLightPlacement
 {
     None,
@@ -279,30 +238,25 @@ public enum SecondLightPlacement
     Front
 }
 
-/// <summary>
-/// Параметры рендеринга, собираемые из пользовательского интерфейса.
-/// Содержит все настройки для кастомизации процесса трассировки лучей.
-/// </summary>
 public sealed class RenderOptions
 {
-    public int Width { get; set; } = 1024;                    // Ширина выходного изображения
-    public int Height { get; set; } = 768;                    // Высота выходного изображения
-    public int SamplesPerPixel { get; set; } = 1;             // Количество лучей на пиксель (антиалиасинг)
-    public int MaxDepth { get; set; } = 4;                    // Максимальная глубина рекурсии
+    public int Width { get; set; } = 1024;                   
+    public int Height { get; set; } = 768;                   
+    public int SamplesPerPixel { get; set; } = 1;            
+    public int MaxDepth { get; set; } = 4;                 
 
-    public bool MirrorSpheres { get; set; }                   // Делать левую сферу зеркальной
-    public bool MirrorCubes { get; set; }                     // Делать левый куб зеркальным
-    public bool TransparentSpheres { get; set; }              // Делать правую сферу прозрачной
-    public bool TransparentCubes { get; set; }                // Делать правый куб прозрачным
+    public bool MirrorSpheres { get; set; }                
+    public bool MirrorCubes { get; set; }                   
+    public bool TransparentSpheres { get; set; }             
+    public bool TransparentCubes { get; set; }               
 
-    public MirrorWall MirrorWall { get; set; } = MirrorWall.None;  // Выбор зеркальной стены
-    public SecondLightPlacement SecondLightPlacement { get; set; } = SecondLightPlacement.None;  // Второй источник света
+    public MirrorWall MirrorWall { get; set; } = MirrorWall.None; 
+    public SecondLightPlacement SecondLightPlacement { get; set; } = SecondLightPlacement.None; 
 }
 
 /// <summary>
-/// Генератор случайных чисел с потокобезопасностью (ThreadLocal).
-/// Используется для случайного смещения лучей при антиалиасинге.
-/// Каждый поток имеет свой экземпляр Random для предотвращения блокировок.
+/// Генератор случайных чисел.
+/// Используется для случайного смещения лучей при антиалиасинге
 /// </summary>
 internal static class Rng
 {
@@ -310,11 +264,6 @@ internal static class Rng
     public static double NextDouble() => _rnd.Value!.NextDouble();
 }
 
-/// <summary>
-/// Трехмерный вектор с поддержкой основных математических операций.
-/// Используется для представления точек, направлений, нормалей и цветов.
-/// Оптимизирован для вычислений в трассировке лучей.
-/// </summary>
 public readonly struct Vec3
 {
     public readonly double X;
@@ -326,22 +275,21 @@ public readonly struct Vec3
     // Базовые векторные операции
     public static Vec3 operator +(Vec3 a, Vec3 b) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
     public static Vec3 operator -(Vec3 a, Vec3 b) => new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+    public static Vec3 operator -(Vec3 a) => new(-a.X, -a.Y, -a.Z);
     public static Vec3 operator *(Vec3 a, double t) => new(a.X * t, a.Y * t, a.Z * t);
     public static Vec3 operator *(double t, Vec3 a) => a * t;
     public static Vec3 operator /(Vec3 a, double t) => new(a.X / t, a.Y / t, a.Z / t);
-    public static Vec3 operator -(Vec3 a) => new(-a.X, -a.Y, -a.Z);
 
     public double Length() => Math.Sqrt(X * X + Y * Y + Z * Z);
-    public double LengthSquared() => X * X + Y * Y + Z * Z;
+    public double LengthSqr() => X * X + Y * Y + Z * Z;
 
     /// <summary>
-    /// Возвращает нормализованную копию вектора.
-    /// Защищено от деления на ноль.
+    /// Возвращает нормализованную копию вектора
     /// </summary>
     public Vec3 Normalized()
     {
         double len = Length();
-        if (len <= 1e-12) return new Vec3(0, 0, 0);
+        if (len <= 1e-12) return new Vec3(0, 0, 0); // Защита от деления на ноль
         return this / len;
     }
 
@@ -362,8 +310,7 @@ public readonly struct Vec3
     public static Vec3 Reflect(Vec3 v, Vec3 n) => v - 2.0 * Dot(v, n) * n;
 
     /// <summary>
-    /// Вычисляет преломленный вектор по закону Снеллиуса.
-    /// Возвращает false при полном внутреннем отражении.
+    /// Вычисляет преломленный вектор по закону Снеллиуса
     /// </summary>
     /// <param name="uv">Падающий вектор (должен быть нормализован)</param>
     /// <param name="n">Нормаль поверхности (должна быть нормализована)</param>
@@ -373,7 +320,7 @@ public readonly struct Vec3
     {
         double cosTheta = Math.Min(Dot(-uv, n), 1.0);
         Vec3 rOutPerp = etaIOverEtaT * (uv + cosTheta * n);
-        double k = 1.0 - rOutPerp.LengthSquared();
+        double k = 1.0 - rOutPerp.LengthSqr();
 
         if (k < 0)  // Полное внутреннее отражение
         {

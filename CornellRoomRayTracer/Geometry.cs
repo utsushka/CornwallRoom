@@ -1,8 +1,7 @@
 ﻿namespace CornwallRoom;
 
 /// <summary>
-/// Прямоугольник в плоскости XY (горизонтальный).
-/// Используется для передней и задней стен Корнуэльской комнаты.
+/// Прямоугольник в плоскости XY
 /// </summary>
 public sealed class XYRect : IHittable
 {
@@ -18,8 +17,7 @@ public sealed class XYRect : IHittable
     }
 
     /// <summary>
-    /// Проверяет пересечение луча с прямоугольником в плоскости XY.
-    /// Быстрый алгоритм для axis-aligned прямоугольников.
+    /// Проверяет пересечение луча с прямоугольником в плоскости XY
     /// </summary>
     public bool Hit(in Ray ray, double tMin, double tMax, out HitRecord hit)
     {
@@ -44,8 +42,7 @@ public sealed class XYRect : IHittable
 }
 
 /// <summary>
-/// Прямоугольник в плоскости XZ (горизонтальный).
-/// Используется для пола и потолка Корнуэльской комнаты.
+/// Прямоугольник в плоскости XZ
 /// </summary>
 public sealed class XZRect : IHittable
 {
@@ -61,7 +58,7 @@ public sealed class XZRect : IHittable
     }
 
     /// <summary>
-    /// Проверяет пересечение луча с прямоугольником в плоскости XZ.
+    /// Проверяет пересечение луча с прямоугольником в плоскости XZ
     /// </summary>
     public bool Hit(in Ray ray, double tMin, double tMax, out HitRecord hit)
     {
@@ -81,8 +78,7 @@ public sealed class XZRect : IHittable
 }
 
 /// <summary>
-/// Прямоугольник в плоскости YZ (вертикальный).
-/// Используется для левой и правой стен Корнуэльской комнаты.
+/// Прямоугольник в плоскости YZ
 /// </summary>
 public sealed class YZRect : IHittable
 {
@@ -98,7 +94,7 @@ public sealed class YZRect : IHittable
     }
 
     /// <summary>
-    /// Проверяет пересечение луча с прямоугольником в плоскости YZ.
+    /// Проверяет пересечение луча с прямоугольником в плоскости YZ
     /// </summary>
     public bool Hit(in Ray ray, double tMin, double tMax, out HitRecord hit)
     {
@@ -117,10 +113,6 @@ public sealed class YZRect : IHittable
     }
 }
 
-/// <summary>
-/// Сфера - базовый объект в трассировке лучей.
-/// Используется для создания сферических объектов в Корнуэльской комнате.
-/// </summary>
 public sealed class Sphere : IHittable
 {
     public Vec3 Center { get; }
@@ -135,8 +127,7 @@ public sealed class Sphere : IHittable
     }
 
     /// <summary>
-    /// Проверяет пересечение луча со сферой.
-    /// Решает квадратное уравнение для параметра луча.
+    /// Проверяет пересечение луча со сферой
     /// </summary>
     public bool Hit(in Ray ray, double tMin, double tMax, out HitRecord hit)
     {
