@@ -135,9 +135,9 @@ public sealed class Sphere : IHittable
         Vec3 oc = ray.Origin - Center;
 
         // Коэффициенты квадратного уравнения (o + t*d - c)^2 = r^2
-        double a = ray.Direction.LengthSquared();
+        double a = ray.Direction.LengthSqr();
         double halfB = Vec3.Dot(oc, ray.Direction);  // Упрощенное b/2
-        double c = oc.LengthSquared() - Radius * Radius;
+        double c = oc.LengthSqr() - Radius * Radius;
 
         // Дискриминант (упрощенный: (b/2)^2 - ac)
         double discriminant = halfB * halfB - a * c;

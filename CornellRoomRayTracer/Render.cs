@@ -328,7 +328,7 @@ public static class RayTracer
         foreach (var light in lights)
         {
             Vec3 toL = light.Position - p;
-            double dist2 = toL.LengthSquared();
+            double dist2 = toL.LengthSqr();
             double dist = Math.Sqrt(dist2);
             Vec3 ldir = toL / dist;
 
