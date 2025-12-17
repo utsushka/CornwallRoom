@@ -97,15 +97,15 @@ public static class SceneFactory
         {
             sphere1Mat.IsMirror = true;
             sphere1Mat.MirrorStrength = 0.8;
-            sphere1Mat.ReflectionFactor = 1.0;  // Полное отражение
+            sphere1Mat.Reflection = 1.0;  // Полное отражение
         }
 
         if (opts.TransparentSpheres)
         {
             sphere2Mat.IsTransparent = true;
-            sphere2Mat.Ior = 1.1;  // Коэффициент преломления чуть выше воздуха
+            sphere2Mat.Refraction = 1.1;  // Коэффициент преломления чуть выше воздуха
             sphere2Mat.Transparency = 0.95;  
-            sphere2Mat.ReflectionFactor = 0.1;  // 10% отражения по Френелю
+            sphere2Mat.Reflection = 0.1;  // 10% отражения по Френелю
             sphere2Mat.Albedo = new ColorRGB(0.9, 0.9, 0.9);  
         }
 
@@ -121,15 +121,15 @@ public static class SceneFactory
         {
             cube1Mat.IsMirror = true;
             cube1Mat.MirrorStrength = 0.8;
-            cube1Mat.ReflectionFactor = 1.0;
+            cube1Mat.Reflection = 1.0;
         }
 
         if (opts.TransparentCubes)
         {
             cube2Mat.IsTransparent = true;
-            cube2Mat.Ior = 1.1;
+            cube2Mat.Refraction = 1.1;
             cube2Mat.Transparency = 0.95;
-            cube2Mat.ReflectionFactor = 0.1;
+            cube2Mat.Reflection = 0.1;
             cube2Mat.Albedo = new ColorRGB(0.9, 0.9, 0.9);
         }
 
@@ -277,7 +277,7 @@ public static class RayTracer
         // Обработка зеркальных материалов
         if (mat.IsMirror)
         {
-            Vec3 reflDir = Vec3.Reflect(ray.Direction, n).Normalized();
+            Vec3 reflDir = Vec3.Reflect(ray.Direction, n).Normalized(); // угол падения = угол отражения
             var reflRay = new Ray(p + reflDir * 1e-4, reflDir);
             var reflColor = TraceRay(reflRay, world, lights, depth - 1, environmentIor);
             return reflColor * mat.MirrorStrength;  // Учет коэффициента отражения материала
@@ -287,7 +287,9 @@ public static class RayTracer
         if (mat.IsTransparent)
         {
             bool exiting = !hit.FrontFace;  // Определяем, выходит ли луч из материала
-            double refractionRatio = exiting ? mat.Ior / environmentIor : environmentIor / mat.Ior;
+
+            // Коэффициент преломления: n1/n2 или n2/n1 в зависимости от направления
+            double refractionRatio = exiting ? mat.Refraction / environmentIor : environmentIor / mat.Refraction;
 
             Vec3 unitDirection = ray.Direction.Normalized();
 
@@ -300,7 +302,7 @@ public static class RayTracer
             {
                 var refractedRay = new Ray(p + refractedDir * 1e-3, refractedDir);
                 refractedColor = TraceRay(refractedRay, world, lights, depth - 1,
-                                          exiting ? environmentIor : mat.Ior);
+                                          exiting ? environmentIor : mat.Refraction);
                 refractedColor = refractedColor * mat.Transparency;  // Учет прозрачности материала
             }
 
@@ -310,7 +312,7 @@ public static class RayTracer
             ColorRGB reflectedColor = TraceRay(reflectedRay, world, lights, depth - 1, environmentIor);
 
             // Смешивание отраженной и преломленной компонент
-            double kr = mat.ReflectionFactor;  // Коэффициент Френеля (доля отражения)
+            double kr = mat.Reflection;  // Коэффициент Френеля (доля отражения)
             ColorRGB surface = reflectedColor * kr + refractedColor * (1.0 - kr);
 
             // Умножение на цвет материала (подкрашивание стекла)
@@ -319,8 +321,8 @@ public static class RayTracer
             return surface;
         }
 
-        // Диффузный материал: локальное освещение по модели Фонга
-        ColorRGB local = mat.Albedo * 0.02;  // Ambient компонент (2% от цвета материала)
+        // Ambient (фоновое освещение) - минимальная подсветка даже в тени
+        ColorRGB local = mat.Albedo * 0.02;  
 
         Vec3 viewDir = (-ray.Direction).Normalized();
 
@@ -332,13 +334,13 @@ public static class RayTracer
             double dist = Math.Sqrt(dist2);
             Vec3 ldir = toL / dist;
 
-            // Проверка на наличие тени: пускаем луч к источнику света
+            // Теневой луч: проверка видимости источника
             var shadowRay = new Ray(p + n * 1e-3, ldir);
             if (world.Hit(shadowRay, 1e-4, dist - 1e-4, out _)) continue;  // Объект в тени
 
             // Диффузная компонента (закон косинусов Ламберта)
-            double ndotl = Math.Max(0.0, Vec3.Dot(n, ldir));
-            double atten = light.Intensity / (4.0 * Math.PI * dist2);  // Ослабление по квадрату расстояния
+            double ndotl = Math.Max(0.0, Vec3.Dot(n, ldir)); // cos(угла) [0..1]
+            double atten = light.Intensity / (4.0 * Math.PI * dist2);  // Затухание
 
             local += mat.Albedo * light.Color * (ndotl * atten);
 
@@ -347,6 +349,8 @@ public static class RayTracer
             {
                 Vec3 h = (ldir + viewDir).Normalized();  // Вектор полупути
                 double ndoth = Math.Max(0.0, Vec3.Dot(n, h));
+
+                // Формула Фонга: specular * (cos)^power
                 double spec = mat.PhongSpecular * Math.Pow(ndoth, mat.PhongPower);
                 local += light.Color * (spec * atten);
             }

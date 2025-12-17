@@ -73,12 +73,12 @@ public sealed class Camera
     /// <summary>
     /// Генерирует луч через заданную точку на плоскости изображения.
     /// </summary>
-    /// <param name="s">Горизонтальная координата ∈ (0..1)</param>
-    /// <param name="t">Вертикальная координата ∈ (0..1)</param>
+    /// <param name="x">Горизонтальная координата ∈ (0..1)</param>
+    /// <param name="y">Вертикальная координата ∈ (0..1)</param>
     /// <returns>Луч из камеры через точку на плоскости изображения</returns>
-    public Ray GetRay(double s, double t)
+    public Ray GetRay(double x, double y)
     {
-        Vec3 dir = (_lowerLeftCorner + s * _horizontal + t * _vertical - _origin).Normalized();
+        Vec3 dir = (_lowerLeftCorner + x * _horizontal + y * _vertical - _origin).Normalized();
         return new Ray(_origin, dir);
     }
 }
@@ -102,7 +102,6 @@ public readonly struct ColorRGB
 
     /// <summary>
     /// Конвертирует линейный RGB в sRGB с гамма-коррекцией (2.2).
-    /// Ограничивает значения диапазоном [0, 1] перед преобразованием.
     /// </summary>
     public Color ToColorSRGB()
     {
@@ -161,12 +160,12 @@ public sealed class Material
     // Зеркальные свойства
     public bool IsMirror { get; set; }                    
     public double MirrorStrength { get; set; } = 0.85;    // Зеркальность (0..1)
+    public double Reflection { get; set; } = 0.1;         // Коэффициент отражения по Френелю
 
     // Свойства прозрачности/преломления
     public bool IsTransparent { get; set; }               
-    public double Ior { get; set; } = 1.5;                // Коэффициент преломления (index of refraction)
+    public double Refraction { get; set; } = 1.5;         // Преломление
     public double Transparency { get; set; } = 0.98;      // Прозрачность (0..1)
-    public double ReflectionFactor { get; set; } = 0.1;   // Коэффициент отражения по Френелю
 
     // Свойства бликов (модель Фонга)
     public double PhongSpecular { get; set; } = 0.1;      // Интенсивность бликов
@@ -180,9 +179,9 @@ public sealed class Material
             IsMirror = this.IsMirror,
             MirrorStrength = this.MirrorStrength,
             IsTransparent = this.IsTransparent,
-            Ior = this.Ior,
+            Refraction = this.Refraction,
             Transparency = this.Transparency,
-            ReflectionFactor = this.ReflectionFactor,
+            Reflection = this.Reflection,
             PhongSpecular = this.PhongSpecular,
             PhongPower = this.PhongPower
         };
@@ -283,9 +282,6 @@ public readonly struct Vec3
     public double Length() => Math.Sqrt(X * X + Y * Y + Z * Z);
     public double LengthSqr() => X * X + Y * Y + Z * Z;
 
-    /// <summary>
-    /// Возвращает нормализованную копию вектора
-    /// </summary>
     public Vec3 Normalized()
     {
         double len = Length();
@@ -305,15 +301,15 @@ public readonly struct Vec3
     /// <summary>
     /// Вычисляет отраженный вектор по закону "угол падения равен углу отражения".
     /// </summary>
-    /// <param name="v">Падающий вектор (должен быть нормализован)</param>
-    /// <param name="n">Нормаль поверхности (должна быть нормализована)</param>
+    /// <param name="v">Нормализованный падающий вектор</param>
+    /// <param name="n">Нормализованная нормаль поверхности</param>
     public static Vec3 Reflect(Vec3 v, Vec3 n) => v - 2.0 * Dot(v, n) * n;
 
     /// <summary>
     /// Вычисляет преломленный вектор по закону Снеллиуса
     /// </summary>
-    /// <param name="uv">Падающий вектор (должен быть нормализован)</param>
-    /// <param name="n">Нормаль поверхности (должна быть нормализована)</param>
+    /// <param name="uv">Нормализованный падающий вектор</param>
+    /// <param name="n">Нормализованная нормаль поверхности</param>
     /// <param name="etaIOverEtaT">Отношение коэффициентов преломления (n1/n2)</param>
     /// <param name="refracted">Выходной параметр - преломленный вектор</param>
     public static bool Refract(Vec3 uv, Vec3 n, double etaIOverEtaT, out Vec3 refracted)
