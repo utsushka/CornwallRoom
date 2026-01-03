@@ -208,8 +208,8 @@ public static class RayTracer
 
         int w = opts.Width;
         int h = opts.Height;
-        int spp = Math.Max(1, opts.SamplesPerPixel);  // Антиалиасинг: несколько лучей на пиксель
-        int maxDepth = Math.Max(1, opts.MaxDepth);    // Максимальная глубина рекурсии для отражений/преломлений
+        int spp = 5;  // Антиалиасинг: несколько лучей на пиксель
+        int maxDepth = 5;    // Максимальная глубина рекурсии для отражений/преломлений
 
         // Создание целевого растрового изображения
         var bmp = new Bitmap(w, h, PixelFormat.Format24bppRgb);

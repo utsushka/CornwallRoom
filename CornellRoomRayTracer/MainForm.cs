@@ -8,8 +8,6 @@ public sealed class MainForm : Form
     private readonly Panel _rightPanel = new() { Dock = DockStyle.Right, Width = 380, Padding = new Padding(12) };
     private readonly Button _btnRender = new() { Text = "Рендеринг", Dock = DockStyle.Top, Height = 40 };
     private readonly Label _lblStatus = new() { Text = "Готово", Dock = DockStyle.Top, AutoSize = false, Height = 44 };
-    private readonly NumericUpDown _numSamples = new() { Dock = DockStyle.Top, Minimum = 1, Maximum = 16, Value = 1 };
-    private readonly NumericUpDown _numDepth = new() { Dock = DockStyle.Top, Minimum = 1, Maximum = 10, Value = 4 };
 
     private readonly CheckBox _chkMirrorSphere = new() { Text = "Зеркальность сфер", Dock = DockStyle.Top, Checked = false };
     private readonly CheckBox _chkMirrorCube = new() { Text = "Зеркальность кубов", Dock = DockStyle.Top, Checked = false };
@@ -36,12 +34,30 @@ public sealed class MainForm : Form
 
         _rightPanel.Controls.Add(Spacer());
 
-        // Настройки рендеринга: антиалиасинг и глубина рекурсии
-        _rightPanel.Controls.Add(_numSamples);
-        _rightPanel.Controls.Add(new Label { Text = "Сэмплов на пиксель (анти-алиасинг)", Dock = DockStyle.Top, Height = 18 });
+        _rightPanel.Controls.Add(new Label
+        {
+            Text = "• Глубина рекурсии: 5",
+            Dock = DockStyle.Top,
+            Height = 18
+        });
 
-        _rightPanel.Controls.Add(_numDepth);
-        _rightPanel.Controls.Add(new Label { Text = "Макс. глубина отражений/преломлений", Dock = DockStyle.Top, Height = 18 });
+        _rightPanel.Controls.Add(Spacer());
+
+        _rightPanel.Controls.Add(new Label
+        {
+            Text = "• Сэмплов на пиксель: 5",
+            Dock = DockStyle.Top,
+            Height = 18
+        });
+
+        _rightPanel.Controls.Add(Spacer());
+
+        _rightPanel.Controls.Add(new Label
+        {
+            Text = "Фиксированные параметры:",
+            Dock = DockStyle.Top,
+            Height = 18
+        });
 
         _rightPanel.Controls.Add(Spacer());
 
@@ -111,16 +127,12 @@ public sealed class MainForm : Form
         {
             int w = 1024;
             int h = 768;
-            int spp = (int)_numSamples.Value;
-            int depth = (int)_numDepth.Value;
 
             // Сбор всех параметров рендеринга из интерфейса
             var opts = new RenderOptions
             {
                 Width = w,
                 Height = h,
-                SamplesPerPixel = spp,
-                MaxDepth = depth,
                 MirrorSpheres = _chkMirrorSphere.Checked,
                 MirrorCubes = _chkMirrorCube.Checked,
                 TransparentSpheres = _chkGlassSphere.Checked,

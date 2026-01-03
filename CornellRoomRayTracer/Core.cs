@@ -240,9 +240,7 @@ public enum SecondLightPlacement
 public sealed class RenderOptions
 {
     public int Width { get; set; } = 1024;                   
-    public int Height { get; set; } = 768;                   
-    public int SamplesPerPixel { get; set; } = 1;            
-    public int MaxDepth { get; set; } = 4;                 
+    public int Height { get; set; } = 768;                                         
 
     public bool MirrorSpheres { get; set; }                
     public bool MirrorCubes { get; set; }                   
@@ -299,14 +297,16 @@ public readonly struct Vec3
             a.X * b.Y - a.Y * b.X);
 
     /// <summary>
-    /// Вычисляет отраженный вектор по закону "угол падения равен углу отражения".
+    /// Вычисляет отраженный вектор по закону "угол падения равен углу отражения". 
+    /// Векторная формула: R = I - 2*(I·N)*N
     /// </summary>
     /// <param name="v">Нормализованный падающий вектор</param>
     /// <param name="n">Нормализованная нормаль поверхности</param>
     public static Vec3 Reflect(Vec3 v, Vec3 n) => v - 2.0 * Dot(v, n) * n;
 
     /// <summary>
-    /// Вычисляет преломленный вектор по закону Снеллиуса
+    /// Вычисляет преломленный вектор по закону Снеллиуса (n₁ * sin(θ₁) = n₂ * sin(θ₂)). 
+    /// Векторная формула: T = η * I + (η * cosθ₁ - cosθ₂) * N
     /// </summary>
     /// <param name="uv">Нормализованный падающий вектор</param>
     /// <param name="n">Нормализованная нормаль поверхности</param>
